@@ -1,0 +1,31 @@
+from flask import Flask, request, jsonify
+import openai
+
+app = Flask(__name__)
+
+# Configure OpenAI API Key
+openai.api_key = "your_openai_api_key_here"
+
+@app.route('/generate', methods=['POST'])
+def generate_content():
+    data = request.json
+    topic = data.get("topic", "Technology")
+    tone = data.get("tone", "Professional")
+    word_limit = data.get("word_limit", 200)
+    
+    prompt = f"Write a {tone.lower()} article about {topic} in {word_limit} words."
+    
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "system", "content": "You are a helpful AI content generator."},
+                      {"role": "user", "content": prompt}]
+        )
+        content = response['choices'][0]['message']['content']
+        return jsonify({"content": content})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
